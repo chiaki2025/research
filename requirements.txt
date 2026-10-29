@@ -1,0 +1,2 @@
+# Python Core Dependencies for Hardware Golden Model & Test Vector Generation
+numpy>=1.21.0

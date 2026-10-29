@@ -1,0 +1,21 @@
+# Python junk
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+
+# SystemVerilog / Simulator junk (ModelSim, Questa, Vivado)
+*.log
+*.wlf
+*.vcd
+*.ucdb
+work/
+transcript
+vsim.wlf
+*.jou
+*.pb
+
+# Large generated data files 
+golden_model/generated_vectors/*.txt
+tb/test_vectors/*.txt
