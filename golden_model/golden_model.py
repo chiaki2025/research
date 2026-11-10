@@ -1,5 +1,5 @@
-
 import numpy as np
+import time
 
 H_IN, W_IN, C = 112, 112, 32
 K_H, K_W = 3, 3
@@ -212,19 +212,49 @@ def generate_all_testcases():
     return tests
 
 
+
+import time
+
 if __name__ == "__main__":
     test_suite = generate_all_testcases()
+
+    total_time = 0.0
+    NUM_RUNS = 5
 
     for name, (X, W, pad, stride) in test_suite.items():
         print(f"\nProcessing: {name}")
         print(f"Input:  {X.shape}, dtype={X.dtype}")
         print(f"Weight: {W.shape}, dtype={W.dtype}")
 
+        # Warm-up
         Y = depthwise_conv2d_int8(
             X, W, padding=pad, stride=stride
         )
 
+        # Benchmark convolution only
+        execution_times = []
+
+        for _ in range(NUM_RUNS):
+            start_time = time.perf_counter()
+
+            Y = depthwise_conv2d_int8(
+                X, W, padding=pad, stride=stride
+            )
+
+            end_time = time.perf_counter()
+
+            execution_times.append(
+                (end_time - start_time) * 1000
+            )
+
+        avg_time = sum(execution_times) / NUM_RUNS
+        median_time = sorted(execution_times)[NUM_RUNS // 2]
+
+        total_time += median_time
+
         print(f"Output: {Y.shape}, dtype={Y.dtype}")
+        print(f"Average execution time: {avg_time:.3f} ms")
+        print(f"Median execution time:  {median_time:.3f} ms")
 
         # Independent checks on the random test
         if name == "tc4_1_random_reference":
@@ -241,6 +271,7 @@ if __name__ == "__main__":
 
             print("PASS: Independent scalar checks")
 
+        # Export files (not included in benchmark)
         export_to_txt(
             f"{name}_input.txt", X, is_hex=True
         )
@@ -252,3 +283,5 @@ if __name__ == "__main__":
         )
 
     print("\nAll test vectors generated.")
+    print(f"Total median execution time: {total_time:.3f} ms")
+
